@@ -5,7 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	test "github.com/osechet/datastore/_proto/osechet/test"
+	test "github.com/osechet/go-datastore/_proto/osechet/test"
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 

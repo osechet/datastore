@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	test "github.com/osechet/datastore/_proto/osechet/test"
+	test "github.com/osechet/go-datastore/_proto/osechet/test"
 )
 
 func TestFieldIndex(t *testing.T) {

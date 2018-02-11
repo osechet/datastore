@@ -1,0 +1,6 @@
+# Tools
+coverage.txt
+filter/debug.test
+
+# IDE
+.history/
