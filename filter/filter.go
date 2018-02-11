@@ -6,28 +6,31 @@ import (
 )
 
 // Match checks if the given message matches the given filter.
-func Match(filter datastore.Filter, message descriptor.Message) bool {
-	switch filter.FilterType.(type) {
-	case *datastore.Filter_PropertyFilter:
-		impl := filter.GetPropertyFilter()
-		property := impl.GetProperty()
-		if property == nil {
-			return false
+func Match(filter *datastore.Filter, message descriptor.Message) bool {
+	if filter != nil {
+		switch filter.FilterType.(type) {
+		case *datastore.Filter_PropertyFilter:
+			impl := filter.GetPropertyFilter()
+			property := impl.GetProperty()
+			if property == nil {
+				return false
+			}
+			value := impl.GetValue()
+			if value == nil {
+				return false
+			}
+			return compare(message, property.Name, impl.GetOp(), *value)
+		case *datastore.Filter_CompositeFilter:
+			filters := filter.GetCompositeFilter().GetFilters()
+			matched := len(filters) > 0
+			for _, filter := range filters {
+				matched = matched && Match(filter, message)
+			}
+			return matched
 		}
-		value := impl.GetValue()
-		if value == nil {
-			return false
-		}
-		return compare(message, property.Name, impl.GetOp(), *value)
-	case *datastore.Filter_CompositeFilter:
-		filters := filter.GetCompositeFilter().GetFilters()
-		matched := len(filters) > 0
-		for _, filter := range filters {
-			matched = matched && Match(*filter, message)
-		}
-		return matched
 	}
-	return false
+	// no filter: match everything
+	return true
 }
 
 func compare(message descriptor.Message, property string, op datastore.PropertyFilter_Operator, reference datastore.Value) bool {

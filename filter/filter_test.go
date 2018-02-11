@@ -11,7 +11,7 @@ import (
 
 func TestMatch(t *testing.T) {
 	type args struct {
-		filter  datastore.Filter
+		filter  *datastore.Filter
 		message descriptor.Message
 	}
 	tests := []struct {
@@ -19,14 +19,14 @@ func TestMatch(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"no filter", args{datastore.Filter{}, &test.Tested{}}, false},
-		{"property filter - no property", args{datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{}}, &test.Tested{}}, false},
-		{"property filter - no value", args{datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL}}}, &test.Tested{Int32Value: 42}}, false},
-		{"property filter", args{datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(42)}}}, &test.Tested{Int32Value: 42}}, true},
-		{"composite filter - no filters", args{datastore.Filter{FilterType: &datastore.Filter_CompositeFilter{}}, &test.Tested{}}, false},
-		{"composite filter - 1 filter", args{datastore.Filter{FilterType: &datastore.Filter_CompositeFilter{CompositeFilter: &datastore.CompositeFilter{Filters: []*datastore.Filter{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(42)}}}}}}}, &test.Tested{Int32Value: 42}}, true},
-		{"composite filter - 2 filters - no match", args{datastore.Filter{FilterType: &datastore.Filter_CompositeFilter{CompositeFilter: &datastore.CompositeFilter{Filters: []*datastore.Filter{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(42)}}}, &datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int64_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(35)}}}}}}}, &test.Tested{Int32Value: 35, Int64Value: 35}}, false},
-		{"composite filter - 2 filters", args{datastore.Filter{FilterType: &datastore.Filter_CompositeFilter{CompositeFilter: &datastore.CompositeFilter{Filters: []*datastore.Filter{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(42)}}}, &datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int64_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(35)}}}}}}}, &test.Tested{Int32Value: 42, Int64Value: 35}}, true},
+		{"no filter", args{&datastore.Filter{}, &test.Tested{}}, true},
+		{"property filter - no property", args{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{}}, &test.Tested{}}, false},
+		{"property filter - no value", args{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL}}}, &test.Tested{Int32Value: 42}}, false},
+		{"property filter", args{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(42)}}}, &test.Tested{Int32Value: 42}}, true},
+		{"composite filter - no filters", args{&datastore.Filter{FilterType: &datastore.Filter_CompositeFilter{}}, &test.Tested{}}, false},
+		{"composite filter - 1 filter", args{&datastore.Filter{FilterType: &datastore.Filter_CompositeFilter{CompositeFilter: &datastore.CompositeFilter{Filters: []*datastore.Filter{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(42)}}}}}}}, &test.Tested{Int32Value: 42}}, true},
+		{"composite filter - 2 filters - no match", args{&datastore.Filter{FilterType: &datastore.Filter_CompositeFilter{CompositeFilter: &datastore.CompositeFilter{Filters: []*datastore.Filter{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(42)}}}, &datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int64_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(35)}}}}}}}, &test.Tested{Int32Value: 35, Int64Value: 35}}, false},
+		{"composite filter - 2 filters", args{&datastore.Filter{FilterType: &datastore.Filter_CompositeFilter{CompositeFilter: &datastore.CompositeFilter{Filters: []*datastore.Filter{&datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int32_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(42)}}}, &datastore.Filter{FilterType: &datastore.Filter_PropertyFilter{PropertyFilter: &datastore.PropertyFilter{Property: &datastore.PropertyReference{Name: "int64_value"}, Op: datastore.PropertyFilter_EQUAL, Value: makeIntegerValue(35)}}}}}}}, &test.Tested{Int32Value: 42, Int64Value: 35}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
