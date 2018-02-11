@@ -5,24 +5,23 @@ import (
 	"sort"
 	"testing"
 
-	library "github.com/osechet/redistest/_proto/osechet/library"
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
-func Command(query datastore.Query, dbBooks []*library.Book) []*library.Book {
+func Command(query datastore.Query, dbBooks []*Book) []*Book {
 	comparators := make([]Comparator, 0)
 	for _, order := range query.Order {
 		property := order.Property.Name
 		if order.Direction == datastore.PropertyOrder_DESCENDING {
-			c := NewPropertyComparator(reflect.TypeOf(library.Book{}), property, Descending)
+			c := NewPropertyComparator(reflect.TypeOf(Book{}), property, Descending)
 			comparators = append(comparators, c)
 		} else {
-			c := NewPropertyComparator(reflect.TypeOf(library.Book{}), property, Ascending)
+			c := NewPropertyComparator(reflect.TypeOf(Book{}), property, Ascending)
 			comparators = append(comparators, c)
 		}
 	}
 	comparator := NewCompositeComparator(comparators)
-	books := make([]*library.Book, 0)
+	books := make([]*Book, 0)
 	for _, book := range dbBooks {
 		index := sort.Search(len(books), func(i int) bool {
 			return comparator.Less(book, books[i])
@@ -37,12 +36,12 @@ func Command(query datastore.Query, dbBooks []*library.Book) []*library.Book {
 func TestProcess(t *testing.T) {
 	type args struct {
 		query   datastore.Query
-		dbBooks []*library.Book
+		dbBooks []*Book
 	}
 	tests := []struct {
 		name string
 		args args
-		want []*library.Book
+		want []*Book
 	}{
 		{
 			"test 1",
@@ -55,7 +54,7 @@ func TestProcess(t *testing.T) {
 						},
 					},
 				},
-				[]*library.Book{
+				[]*Book{
 					{
 						Isbn:   60929871,
 						Title:  "Brave New World",
@@ -78,7 +77,7 @@ func TestProcess(t *testing.T) {
 					},
 				},
 			},
-			[]*library.Book{
+			[]*Book{
 				{
 					Isbn:   9780140301694,
 					Title:  "Alice's Adventures in Wonderland",
@@ -112,7 +111,7 @@ func TestProcess(t *testing.T) {
 						},
 					},
 				},
-				[]*library.Book{
+				[]*Book{
 					{
 						Isbn:   60929871,
 						Title:  "Brave New World",
@@ -135,7 +134,7 @@ func TestProcess(t *testing.T) {
 					},
 				},
 			},
-			[]*library.Book{
+			[]*Book{
 				{
 					Isbn:   140009728,
 					Title:  "Nineteen Eighty-Four",
@@ -173,7 +172,7 @@ func TestProcess(t *testing.T) {
 						},
 					},
 				},
-				[]*library.Book{
+				[]*Book{
 					{
 						Isbn:   60929871,
 						Title:  "Brave New World",
@@ -196,7 +195,7 @@ func TestProcess(t *testing.T) {
 					},
 				},
 			},
-			[]*library.Book{
+			[]*Book{
 				{
 					Isbn:   60929871,
 					Title:  "Brave New World",
@@ -234,7 +233,7 @@ func TestProcess(t *testing.T) {
 						},
 					},
 				},
-				[]*library.Book{
+				[]*Book{
 					{
 						Isbn:   60929871,
 						Title:  "Brave New World",
@@ -257,7 +256,7 @@ func TestProcess(t *testing.T) {
 					},
 				},
 			},
-			[]*library.Book{
+			[]*Book{
 				{
 					Isbn:   60929871,
 					Title:  "Brave New World",
