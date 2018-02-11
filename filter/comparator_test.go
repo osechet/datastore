@@ -5,23 +5,24 @@ import (
 	"sort"
 	"testing"
 
+	test "github.com/osechet/datastore/_proto/osechet/test"
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
-func Command(query datastore.Query, dbBooks []*Book) []*Book {
+func Command(query datastore.Query, dbBooks []*test.Book) []*test.Book {
 	comparators := make([]Comparator, 0)
 	for _, order := range query.Order {
 		property := order.Property.Name
 		if order.Direction == datastore.PropertyOrder_DESCENDING {
-			c := NewPropertyComparator(reflect.TypeOf(Book{}), property, Descending)
+			c := NewPropertyComparator(reflect.TypeOf(test.Book{}), property, Descending)
 			comparators = append(comparators, c)
 		} else {
-			c := NewPropertyComparator(reflect.TypeOf(Book{}), property, Ascending)
+			c := NewPropertyComparator(reflect.TypeOf(test.Book{}), property, Ascending)
 			comparators = append(comparators, c)
 		}
 	}
 	comparator := NewCompositeComparator(comparators)
-	books := make([]*Book, 0)
+	books := make([]*test.Book, 0)
 	for _, book := range dbBooks {
 		index := sort.Search(len(books), func(i int) bool {
 			return comparator.Less(book, books[i])
@@ -36,12 +37,12 @@ func Command(query datastore.Query, dbBooks []*Book) []*Book {
 func TestProcess(t *testing.T) {
 	type args struct {
 		query   datastore.Query
-		dbBooks []*Book
+		dbBooks []*test.Book
 	}
 	tests := []struct {
 		name string
 		args args
-		want []*Book
+		want []*test.Book
 	}{
 		{
 			"test 1",
@@ -54,7 +55,7 @@ func TestProcess(t *testing.T) {
 						},
 					},
 				},
-				[]*Book{
+				[]*test.Book{
 					{
 						Isbn:   60929871,
 						Title:  "Brave New World",
@@ -77,7 +78,7 @@ func TestProcess(t *testing.T) {
 					},
 				},
 			},
-			[]*Book{
+			[]*test.Book{
 				{
 					Isbn:   9780140301694,
 					Title:  "Alice's Adventures in Wonderland",
@@ -111,7 +112,7 @@ func TestProcess(t *testing.T) {
 						},
 					},
 				},
-				[]*Book{
+				[]*test.Book{
 					{
 						Isbn:   60929871,
 						Title:  "Brave New World",
@@ -134,7 +135,7 @@ func TestProcess(t *testing.T) {
 					},
 				},
 			},
-			[]*Book{
+			[]*test.Book{
 				{
 					Isbn:   140009728,
 					Title:  "Nineteen Eighty-Four",
@@ -172,7 +173,7 @@ func TestProcess(t *testing.T) {
 						},
 					},
 				},
-				[]*Book{
+				[]*test.Book{
 					{
 						Isbn:   60929871,
 						Title:  "Brave New World",
@@ -195,7 +196,7 @@ func TestProcess(t *testing.T) {
 					},
 				},
 			},
-			[]*Book{
+			[]*test.Book{
 				{
 					Isbn:   60929871,
 					Title:  "Brave New World",
@@ -233,7 +234,7 @@ func TestProcess(t *testing.T) {
 						},
 					},
 				},
-				[]*Book{
+				[]*test.Book{
 					{
 						Isbn:   60929871,
 						Title:  "Brave New World",
@@ -256,7 +257,7 @@ func TestProcess(t *testing.T) {
 					},
 				},
 			},
-			[]*Book{
+			[]*test.Book{
 				{
 					Isbn:   60929871,
 					Title:  "Brave New World",
@@ -324,12 +325,13 @@ func TestCompositeComparator_Less(t *testing.T) {
 		want   bool
 	}{
 		{"no comparators", fields{make([]Comparator, 0)}, args{1, 1}, false},
-		{"1 comparator - false", fields{[]Comparator{ValueComparator{Ascending}}}, args{1, 1}, false},
-		{"1 comparator - true", fields{[]Comparator{ValueComparator{Ascending}}}, args{1, 2}, true},
-		{"2 comparators simple - true", fields{[]Comparator{NewPropertyComparator(reflect.TypeOf(Tested1{}), "field1", Ascending), NewPropertyComparator(reflect.TypeOf(Tested1{}), "field2", Ascending)}}, args{Tested1{1, 2}, Tested1{2, 3}}, true},
-		{"2 comparators simple - false", fields{[]Comparator{NewPropertyComparator(reflect.TypeOf(Tested1{}), "field1", Ascending), NewPropertyComparator(reflect.TypeOf(Tested1{}), "field2", Ascending)}}, args{Tested1{2, 2}, Tested1{1, 3}}, false},
-		{"2 comparators composition - true", fields{[]Comparator{NewPropertyComparator(reflect.TypeOf(Tested1{}), "field1", Ascending), NewPropertyComparator(reflect.TypeOf(Tested1{}), "field2", Ascending)}}, args{Tested1{1, 2}, Tested1{1, 3}}, true},
-		{"2 comparators composition - false", fields{[]Comparator{NewPropertyComparator(reflect.TypeOf(Tested1{}), "field1", Ascending), NewPropertyComparator(reflect.TypeOf(Tested1{}), "field2", Ascending)}}, args{Tested1{1, 3}, Tested1{1, 2}}, false},
+		{"1 comparator - less", fields{[]Comparator{ValueComparator{Ascending}}}, args{int32(1), int32(2)}, true},
+		{"1 comparator - equal", fields{[]Comparator{ValueComparator{Ascending}}}, args{int32(2), int32(2)}, false},
+		{"1 comparator - greater", fields{[]Comparator{ValueComparator{Ascending}}}, args{int32(2), int32(1)}, false},
+		{"2 comparators simple - true", fields{[]Comparator{NewPropertyComparator(reflect.TypeOf(test.Tested{}), "int32_value", Ascending), NewPropertyComparator(reflect.TypeOf(test.Tested{}), "int64_value", Ascending)}}, args{test.Tested{Int32Value: 1, Int64Value: 2}, test.Tested{Int32Value: 2, Int64Value: 3}}, true},
+		{"2 comparators simple - false", fields{[]Comparator{NewPropertyComparator(reflect.TypeOf(test.Tested{}), "int32_value", Ascending), NewPropertyComparator(reflect.TypeOf(test.Tested{}), "int64_value", Ascending)}}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 1, Int64Value: 3}}, false},
+		{"2 comparators composition - true", fields{[]Comparator{NewPropertyComparator(reflect.TypeOf(test.Tested{}), "int32_value", Ascending), NewPropertyComparator(reflect.TypeOf(test.Tested{}), "int64_value", Ascending)}}, args{test.Tested{Int32Value: 1, Int64Value: 2}, test.Tested{Int32Value: 1, Int64Value: 3}}, true},
+		{"2 comparators composition - false", fields{[]Comparator{NewPropertyComparator(reflect.TypeOf(test.Tested{}), "int32_value", Ascending), NewPropertyComparator(reflect.TypeOf(test.Tested{}), "int64_value", Ascending)}}, args{test.Tested{Int32Value: 1, Int64Value: 3}, test.Tested{Int32Value: 1, Int64Value: 2}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -357,12 +359,12 @@ func TestValueComparator_Less(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		{"ascending - less", fields{Ascending}, args{1, 2}, true},
-		{"ascending - equal", fields{Ascending}, args{2, 2}, false},
-		{"ascending - greater", fields{Ascending}, args{2, 1}, false},
-		{"descending - less", fields{Descending}, args{2, 1}, true},
-		{"descending - equal", fields{Descending}, args{2, 2}, false},
-		{"descending - greater", fields{Descending}, args{1, 2}, false},
+		{"ascending - less", fields{Ascending}, args{int32(1), int32(2)}, true},
+		{"ascending - equal", fields{Ascending}, args{int32(2), int32(2)}, false},
+		{"ascending - greater", fields{Ascending}, args{int32(2), int32(1)}, false},
+		{"descending - less", fields{Descending}, args{int32(2), int32(1)}, true},
+		{"descending - equal", fields{Descending}, args{int32(2), int32(2)}, false},
+		{"descending - greater", fields{Descending}, args{int32(1), int32(2)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -390,12 +392,12 @@ func TestValueComparator_Equals(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		{"ascending - less", fields{Ascending}, args{1, 2}, false},
-		{"ascending - equals", fields{Ascending}, args{2, 2}, true},
-		{"ascending - greater", fields{Ascending}, args{2, 1}, false},
-		{"descending - less", fields{Descending}, args{2, 1}, false},
-		{"descending - equal", fields{Descending}, args{2, 2}, true},
-		{"descending - greater", fields{Descending}, args{1, 2}, false},
+		{"ascending - less", fields{Ascending}, args{int32(1), int32(2)}, false},
+		{"ascending - equals", fields{Ascending}, args{int32(2), int32(2)}, true},
+		{"ascending - greater", fields{Ascending}, args{int32(2), int32(1)}, false},
+		{"descending - less", fields{Descending}, args{int32(2), int32(1)}, false},
+		{"descending - equal", fields{Descending}, args{int32(2), int32(2)}, true},
+		{"descending - greater", fields{Descending}, args{int32(1), int32(2)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -423,12 +425,12 @@ func TestValueComparator_Greater(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		{"ascending - less", fields{Ascending}, args{1, 2}, false},
-		{"ascending - equal", fields{Ascending}, args{2, 2}, false},
-		{"ascending - greater", fields{Ascending}, args{2, 1}, true},
-		{"descending - less", fields{Descending}, args{2, 1}, false},
-		{"descending - equal", fields{Descending}, args{2, 2}, false},
-		{"descending - greater", fields{Descending}, args{1, 2}, true},
+		{"ascending - less", fields{Ascending}, args{int32(1), int32(2)}, false},
+		{"ascending - equal", fields{Ascending}, args{int32(2), int32(2)}, false},
+		{"ascending - greater", fields{Ascending}, args{int32(2), int32(1)}, true},
+		{"descending - less", fields{Descending}, args{int32(2), int32(1)}, false},
+		{"descending - equal", fields{Descending}, args{int32(2), int32(2)}, false},
+		{"descending - greater", fields{Descending}, args{int32(1), int32(2)}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -453,8 +455,8 @@ func TestNewPropertyComparator(t *testing.T) {
 		args args
 		want *PropertyComparator
 	}{
-		{"invalid property", args{reflect.TypeOf(Tested1{}), "none", Ascending}, nil},
-		{"valid property", args{reflect.TypeOf(Tested1{}), "field1", Ascending}, &PropertyComparator{0, Ascending}},
+		{"invalid property", args{reflect.TypeOf(test.Tested{}), "none", Ascending}, nil},
+		{"valid property", args{reflect.TypeOf(test.Tested{}), "int32_value", Ascending}, &PropertyComparator{2, Ascending}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -480,12 +482,12 @@ func TestPropertyComparator_Less(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		{"ascending - less", fields{0, Ascending}, args{Tested1{1, 1}, Tested1{2, 2}}, true},
-		{"ascending - equal", fields{0, Ascending}, args{Tested1{2, 2}, Tested1{2, 2}}, false},
-		{"ascending - greater", fields{0, Ascending}, args{Tested1{2, 2}, Tested1{1, 1}}, false},
-		{"descending - less", fields{0, Descending}, args{Tested1{2, 2}, Tested1{1, 1}}, true},
-		{"descending - equal", fields{0, Descending}, args{Tested1{2, 2}, Tested1{2, 2}}, false},
-		{"descending - greater", fields{0, Descending}, args{Tested1{1, 1}, Tested1{2, 2}}, false},
+		{"ascending - less", fields{2, Ascending}, args{test.Tested{Int32Value: 1, Int64Value: 1}, test.Tested{Int32Value: 2, Int64Value: 2}}, true},
+		{"ascending - equal", fields{2, Ascending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 2, Int64Value: 2}}, false},
+		{"ascending - greater", fields{2, Ascending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 1, Int64Value: 1}}, false},
+		{"descending - less", fields{2, Descending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 1, Int64Value: 1}}, true},
+		{"descending - equal", fields{2, Descending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 2, Int64Value: 2}}, false},
+		{"descending - greater", fields{2, Descending}, args{test.Tested{Int32Value: 1, Int64Value: 1}, test.Tested{Int32Value: 2, Int64Value: 2}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -515,12 +517,12 @@ func TestPropertyComparator_Equals(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		{"ascending - less", fields{0, Ascending}, args{Tested1{1, 1}, Tested1{2, 2}}, false},
-		{"ascending - equal", fields{0, Ascending}, args{Tested1{2, 2}, Tested1{2, 2}}, true},
-		{"ascending - greater", fields{0, Ascending}, args{Tested1{2, 2}, Tested1{1, 1}}, false},
-		{"descending - less", fields{0, Descending}, args{Tested1{2, 2}, Tested1{1, 1}}, false},
-		{"descending - equal", fields{0, Descending}, args{Tested1{2, 2}, Tested1{2, 2}}, true},
-		{"descending - greater", fields{0, Descending}, args{Tested1{1, 1}, Tested1{2, 2}}, false},
+		{"ascending - less", fields{2, Ascending}, args{test.Tested{Int32Value: 1, Int64Value: 1}, test.Tested{Int32Value: 2, Int64Value: 2}}, false},
+		{"ascending - equal", fields{2, Ascending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 2, Int64Value: 2}}, true},
+		{"ascending - greater", fields{2, Ascending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 1, Int64Value: 1}}, false},
+		{"descending - less", fields{2, Descending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 1, Int64Value: 1}}, false},
+		{"descending - equal", fields{2, Descending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 2, Int64Value: 2}}, true},
+		{"descending - greater", fields{2, Descending}, args{test.Tested{Int32Value: 1, Int64Value: 1}, test.Tested{Int32Value: 2, Int64Value: 2}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -550,12 +552,12 @@ func TestPropertyComparator_Greater(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		{"ascending - less", fields{0, Ascending}, args{Tested1{1, 1}, Tested1{2, 2}}, false},
-		{"ascending - equal", fields{0, Ascending}, args{Tested1{2, 2}, Tested1{2, 2}}, false},
-		{"ascending - greater", fields{0, Ascending}, args{Tested1{2, 2}, Tested1{1, 1}}, true},
-		{"descending - less", fields{0, Descending}, args{Tested1{2, 2}, Tested1{1, 1}}, false},
-		{"descending - equal", fields{0, Descending}, args{Tested1{2, 2}, Tested1{2, 2}}, false},
-		{"descending - greater", fields{0, Descending}, args{Tested1{1, 1}, Tested1{2, 2}}, true},
+		{"ascending - less", fields{2, Ascending}, args{test.Tested{Int32Value: 1, Int64Value: 1}, test.Tested{Int32Value: 2, Int64Value: 2}}, false},
+		{"ascending - equal", fields{2, Ascending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 2, Int64Value: 2}}, false},
+		{"ascending - greater", fields{2, Ascending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 1, Int64Value: 1}}, true},
+		{"descending - less", fields{2, Descending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 1, Int64Value: 1}}, false},
+		{"descending - equal", fields{2, Descending}, args{test.Tested{Int32Value: 2, Int64Value: 2}, test.Tested{Int32Value: 2, Int64Value: 2}}, false},
+		{"descending - greater", fields{2, Descending}, args{test.Tested{Int32Value: 1, Int64Value: 1}, test.Tested{Int32Value: 2, Int64Value: 2}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

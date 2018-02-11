@@ -7,8 +7,10 @@ func Less(a interface{}, b interface{}) bool {
 		return v < b.(float32)
 	case float64:
 		return v < b.(float64)
-	case int:
-		return v < b.(int)
+	case int32:
+		return v < b.(int32)
+	case int64:
+		return v < b.(int64)
 	case string:
 		return v < b.(string)
 	}
@@ -22,8 +24,10 @@ func Equals(a interface{}, b interface{}) bool {
 		return v == b.(float32)
 	case float64:
 		return v == b.(float64)
-	case int:
-		return v == b.(int)
+	case int32:
+		return v == b.(int32)
+	case int64:
+		return v == b.(int64)
 	case string:
 		return v == b.(string)
 	}
@@ -37,8 +41,10 @@ func Greater(a interface{}, b interface{}) bool {
 		return v > b.(float32)
 	case float64:
 		return v > b.(float64)
-	case int:
-		return v > b.(int)
+	case int32:
+		return v > b.(int32)
+	case int64:
+		return v > b.(int64)
 	case string:
 		return v > b.(string)
 	}

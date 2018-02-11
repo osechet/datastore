@@ -3,16 +3,9 @@ package filter
 import (
 	"reflect"
 	"testing"
+
+	test "github.com/osechet/datastore/_proto/osechet/test"
 )
-
-type Tested1 struct {
-	Field1 int `protobuf:"varint,1,opt,name=field1"`
-	Field2 int `protobuf:"varint,2,opt,name=field2"`
-}
-
-type Tested2 struct {
-	Field1 int
-}
 
 func TestFieldIndex(t *testing.T) {
 	type args struct {
@@ -24,9 +17,9 @@ func TestFieldIndex(t *testing.T) {
 		args args
 		want int
 	}{
-		{"unknwon", args{reflect.TypeOf(Tested1{}), "none"}, -1},
-		{"valid", args{reflect.TypeOf(Tested1{}), "field1"}, 0},
-		{"not protobuf", args{reflect.TypeOf(Tested2{}), "field1"}, -1},
+		{"unknwon", args{reflect.TypeOf(test.Tested{}), "none"}, -1},
+		{"valid", args{reflect.TypeOf(test.Tested{}), "int32_value"}, 2},
+		{"not protobuf", args{reflect.TypeOf(NotProtobufType{}), "int32_value"}, -1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -47,7 +40,7 @@ func Test_valueOfField(t *testing.T) {
 		args args
 		want interface{}
 	}{
-		{"valid", args{Tested1{42, 35}, 0}, 42},
+		{"valid", args{test.Tested{Int32Value: 42, Int64Value: 35}, 2}, int32(42)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -68,8 +61,8 @@ func Test_valueOf(t *testing.T) {
 		args args
 		want interface{}
 	}{
-		{"valid", args{Tested1{42, 5}, "field1"}, 42},
-		{"invalid property", args{Tested1{42, 35}, "none"}, nil},
+		{"valid", args{test.Tested{Int32Value: 42, Int64Value: 5}, "int32_value"}, int32(42)},
+		{"invalid property", args{test.Tested{Int32Value: 42, Int64Value: 35}, "none"}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,6 +1,8 @@
 package filter
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // Comparator describes the behavior of a comparable.
 type Comparator interface {

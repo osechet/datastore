@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package osechet.test;
+
+message Book {
+  int64 isbn = 1;
+  string title = 2;
+  string author = 3;
+}
+
+message Tested {
+  double double_value = 1;
+  float float_value = 2;
+  int32 int32_value = 3;
+  int64 int64_value = 4;
+  string string_value = 5;
+}

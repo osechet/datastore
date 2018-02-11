@@ -15,14 +15,21 @@ func TestLess(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"float32_1", args{float32(1), float32(2)}, true},
-		{"float32_2", args{float32(2), float32(1)}, false},
-		{"float64_1", args{1.0, 2.0}, true},
-		{"float64_2", args{2.0, 1.0}, false},
-		{"int_1", args{1, 2}, true},
-		{"int_2", args{2, 1}, false},
-		{"string_1", args{"abc", "def"}, true},
-		{"string_2", args{"def", "abc"}, false},
+		{"float32 - less", args{float32(1), float32(2)}, true},
+		{"float32 - equal", args{float32(2), float32(2)}, false},
+		{"float32 - greater", args{float32(2), float32(1)}, false},
+		{"float64 - less", args{1.0, 2.0}, true},
+		{"float64 - equal", args{2.0, 2.0}, false},
+		{"float64 - greater", args{2.0, 1.0}, false},
+		{"int32 - less", args{int32(1), int32(2)}, true},
+		{"int32 - equal", args{int32(2), int32(2)}, false},
+		{"int32 - greater", args{int32(2), int32(1)}, false},
+		{"int64 - less", args{int64(1), int64(2)}, true},
+		{"int64 - equal", args{int64(2), int64(2)}, false},
+		{"int64 - greater", args{int64(2), int64(1)}, false},
+		{"string - less", args{"abc", "def"}, true},
+		{"string - equal", args{"abc", "abc"}, false},
+		{"string - greater", args{"def", "abc"}, false},
 		{"other", args{os.File{}, os.File{}}, false},
 	}
 	for _, tt := range tests {
@@ -44,14 +51,21 @@ func TestEquals(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"float32_1", args{float32(1), float32(1)}, true},
-		{"float32_2", args{float32(2), float32(1)}, false},
-		{"float64_1", args{1.0, 1.0}, true},
-		{"float64_2", args{2.0, 1.0}, false},
-		{"int_1", args{1, 1}, true},
-		{"int_2", args{2, 1}, false},
-		{"string_1", args{"abc", "abc"}, true},
-		{"string_2", args{"def", "abc"}, false},
+		{"float32 - less", args{float32(1), float32(2)}, false},
+		{"float32 - equal", args{float32(2), float32(2)}, true},
+		{"float32 - greater", args{float32(2), float32(1)}, false},
+		{"float64 - less", args{1.0, 2.0}, false},
+		{"float64 - equal", args{2.0, 2.0}, true},
+		{"float64 - greater", args{2.0, 1.0}, false},
+		{"int32 - less", args{int32(1), int32(2)}, false},
+		{"int32 - equal", args{int32(2), int32(2)}, true},
+		{"int32 - greater", args{int32(2), int32(1)}, false},
+		{"int64 - less", args{int64(1), int64(2)}, false},
+		{"int64 - equal", args{int64(2), int64(2)}, true},
+		{"int64 - greater", args{int64(2), int64(1)}, false},
+		{"string - less", args{"abc", "def"}, false},
+		{"string - equal", args{"abc", "abc"}, true},
+		{"string - greater", args{"def", "abc"}, false},
 		{"other", args{os.File{}, os.File{}}, false},
 	}
 	for _, tt := range tests {
@@ -73,14 +87,21 @@ func TestGreater(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"float32_1", args{float32(1), float32(2)}, false},
-		{"float32_2", args{float32(2), float32(1)}, true},
-		{"float64_1", args{1.0, 2.0}, false},
-		{"float64_2", args{2.0, 1.0}, true},
-		{"int_1", args{1, 2}, false},
-		{"int_2", args{2, 1}, true},
-		{"string_1", args{"abc", "def"}, false},
-		{"string_2", args{"def", "abc"}, true},
+		{"float32 - less", args{float32(1), float32(2)}, false},
+		{"float32 - equal", args{float32(2), float32(2)}, false},
+		{"float32 - greater", args{float32(2), float32(1)}, true},
+		{"float64 - less", args{1.0, 2.0}, false},
+		{"float64 - equal", args{2.0, 2.0}, false},
+		{"float64 - greater", args{2.0, 1.0}, true},
+		{"int32 - less", args{int32(1), int32(2)}, false},
+		{"int32 - equal", args{int32(2), int32(2)}, false},
+		{"int32 - greater", args{int32(2), int32(1)}, true},
+		{"int64 - less", args{int64(1), int64(2)}, false},
+		{"int64 - equal", args{int64(2), int64(2)}, false},
+		{"int64 - greater", args{int64(2), int64(1)}, true},
+		{"string - less", args{"abc", "def"}, false},
+		{"string - equal", args{"abc", "abc"}, false},
+		{"string - greater", args{"def", "abc"}, true},
 		{"other", args{os.File{}, os.File{}}, false},
 	}
 	for _, tt := range tests {

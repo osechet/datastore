@@ -20,8 +20,8 @@ func Match(filter datastore.Filter, message descriptor.Message) bool {
 		}
 		return compare(message, property.Name, impl.GetOp(), *value)
 	case *datastore.Filter_CompositeFilter:
-		filters := filter.GetCompositeFilter().Filters
-		matched := true
+		filters := filter.GetCompositeFilter().GetFilters()
+		matched := len(filters) > 0
 		for _, filter := range filters {
 			matched = matched && Match(*filter, message)
 		}
@@ -51,6 +51,14 @@ func compare(message descriptor.Message, property string, op datastore.PropertyF
 
 func lt(value interface{}, reference datastore.Value) bool {
 	switch v := value.(type) {
+	case float32:
+		return v < float32(reference.GetDoubleValue())
+	case float64:
+		return v < reference.GetDoubleValue()
+	case int32:
+		return v < int32(reference.GetIntegerValue())
+	case int64:
+		return v < reference.GetIntegerValue()
 	case string:
 		return v < reference.GetStringValue()
 	}
@@ -59,6 +67,14 @@ func lt(value interface{}, reference datastore.Value) bool {
 
 func lte(value interface{}, reference datastore.Value) bool {
 	switch v := value.(type) {
+	case float32:
+		return v <= float32(reference.GetDoubleValue())
+	case float64:
+		return v <= reference.GetDoubleValue()
+	case int32:
+		return v <= int32(reference.GetIntegerValue())
+	case int64:
+		return v <= reference.GetIntegerValue()
 	case string:
 		return v <= reference.GetStringValue()
 	}
@@ -67,8 +83,15 @@ func lte(value interface{}, reference datastore.Value) bool {
 
 func gt(value interface{}, reference datastore.Value) bool {
 	switch v := value.(type) {
+	case float32:
+		return v > float32(reference.GetDoubleValue())
+	case float64:
+		return v > reference.GetDoubleValue()
+	case int32:
+		return v > int32(reference.GetIntegerValue())
+	case int64:
+		return v > reference.GetIntegerValue()
 	case string:
-		// return strings.HasPrefix(v, reference.GetStringValue())
 		return v > reference.GetStringValue()
 	}
 	return false
@@ -76,8 +99,15 @@ func gt(value interface{}, reference datastore.Value) bool {
 
 func gte(value interface{}, reference datastore.Value) bool {
 	switch v := value.(type) {
+	case float32:
+		return v >= float32(reference.GetDoubleValue())
+	case float64:
+		return v >= reference.GetDoubleValue()
+	case int32:
+		return v >= int32(reference.GetIntegerValue())
+	case int64:
+		return v >= reference.GetIntegerValue()
 	case string:
-		// return strings.HasPrefix(v, reference.GetStringValue())
 		return v >= reference.GetStringValue()
 	}
 	return false
@@ -85,6 +115,14 @@ func gte(value interface{}, reference datastore.Value) bool {
 
 func equal(value interface{}, reference datastore.Value) bool {
 	switch v := value.(type) {
+	case float32:
+		return v == float32(reference.GetDoubleValue())
+	case float64:
+		return v == reference.GetDoubleValue()
+	case int32:
+		return v == int32(reference.GetIntegerValue())
+	case int64:
+		return v == reference.GetIntegerValue()
 	case string:
 		return v == reference.GetStringValue()
 	}
