@@ -7,11 +7,12 @@ import (
 type Scanner interface {
 	HasNext() bool
 	Next() interface{}
+	Err() error
 }
 
 type Storage interface {
 	Scanner() Scanner
-	ItemFor(key interface{}) descriptor.Message
+	ItemFor(key interface{}) (descriptor.Message, error)
 }
 
 type SliceStorageScanner struct {
@@ -36,6 +37,10 @@ func (s *SliceStorageScanner) Next() interface{} {
 	return ret
 }
 
+func (s SliceStorageScanner) Err() error {
+	return nil
+}
+
 type SliceStorage struct {
 	items []descriptor.Message
 }
@@ -44,6 +49,6 @@ func (s SliceStorage) Scanner() Scanner {
 	return NewSliceStorageScanner(s)
 }
 
-func (s SliceStorage) ItemFor(key interface{}) descriptor.Message {
-	return s.items[key.(int)]
+func (s SliceStorage) ItemFor(key interface{}) (descriptor.Message, error) {
+	return s.items[key.(int)], nil
 }

@@ -11,10 +11,10 @@ import (
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
-func AutoQuery(q datastore.Query, books []*test.Book) []*test.Book {
+func AutoQuery(q datastore.Query, books []*test.Book) ([]*test.Book, error) {
 	results := NewBookResultSet()
-	query.AutoQuery(NewBookStorage(books), q, reflect.TypeOf(test.Book{}), results)
-	return results.Books
+	err := query.AutoQuery(NewBookStorage(books), q, reflect.TypeOf(test.Book{}), results)
+	return results.Books, err
 }
 
 type BookScanner struct {
@@ -39,6 +39,10 @@ func (s *BookScanner) Next() interface{} {
 	return ret
 }
 
+func (s *BookScanner) Err() error {
+	return nil
+}
+
 type BookStorage struct {
 	books []*test.Book
 }
@@ -53,8 +57,8 @@ func (s BookStorage) Scanner() query.Scanner {
 	return NewBookScanner(s)
 }
 
-func (s BookStorage) ItemFor(key interface{}) descriptor.Message {
-	return s.books[key.(int)]
+func (s BookStorage) ItemFor(key interface{}) (descriptor.Message, error) {
+	return s.books[key.(int)], nil
 }
 
 type BookResultSet struct {

@@ -305,7 +305,7 @@ func TestAutoQuery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := AutoQuery(tt.args.query, tt.args.dbBooks); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := AutoQuery(tt.args.query, tt.args.dbBooks); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Query() = %v, want %v", got, tt.want)
 			}
 		})
