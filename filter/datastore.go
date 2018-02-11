@@ -8,7 +8,7 @@ import (
 )
 
 // NewComparator creates a new Comparator from the given query's PropertyOrder.
-func NewComparator(t reflect.Type, order *datastore.PropertyOrder) Comparator {
+func NewComparator(order *datastore.PropertyOrder, t reflect.Type) *PropertyComparator {
 	property := order.GetProperty().GetName()
 	if len(property) == 0 {
 		log.Println("Invalid order: property name is not set")

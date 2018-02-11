@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	test "github.com/osechet/go-datastore/_proto/osechet/test"
+	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
 func TestNewCompositeComparator(t *testing.T) {
@@ -22,6 +23,118 @@ func TestNewCompositeComparator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewCompositeComparator(tt.args.comparators); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewCompositeComparator() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMakeComparator(t *testing.T) {
+	type args struct {
+		query datastore.Query
+		t     reflect.Type
+	}
+	tests := []struct {
+		name string
+		args args
+		want *CompositeComparator
+	}{
+		{"no order", args{datastore.Query{}, reflect.TypeOf(test.Tested{})}, &CompositeComparator{[]Comparator{}}},
+		{
+			"invalid property",
+			args{
+				datastore.Query{
+					Order: []*datastore.PropertyOrder{
+						&datastore.PropertyOrder{
+							Direction: datastore.PropertyOrder_ASCENDING,
+						},
+					},
+				},
+				reflect.TypeOf(test.Tested{}),
+			},
+			&CompositeComparator{[]Comparator{}},
+		},
+		{
+			"unknown property",
+			args{
+				datastore.Query{
+					Order: []*datastore.PropertyOrder{
+						&datastore.PropertyOrder{
+							Property:  &datastore.PropertyReference{Name: "none"},
+							Direction: datastore.PropertyOrder_ASCENDING,
+						},
+					},
+				},
+				reflect.TypeOf(test.Tested{}),
+			},
+			&CompositeComparator{[]Comparator{}},
+		},
+		{
+			"ascending",
+			args{
+				datastore.Query{
+					Order: []*datastore.PropertyOrder{
+						&datastore.PropertyOrder{
+							Property:  &datastore.PropertyReference{Name: "int32_value"},
+							Direction: datastore.PropertyOrder_ASCENDING,
+						},
+					},
+				},
+				reflect.TypeOf(test.Tested{}),
+			},
+			&CompositeComparator{
+				[]Comparator{
+					&PropertyComparator{2, Ascending},
+				},
+			},
+		},
+		{
+			"descending",
+			args{
+				datastore.Query{
+					Order: []*datastore.PropertyOrder{
+						&datastore.PropertyOrder{
+							Property:  &datastore.PropertyReference{Name: "int32_value"},
+							Direction: datastore.PropertyOrder_DESCENDING,
+						},
+					},
+				},
+				reflect.TypeOf(test.Tested{}),
+			},
+			&CompositeComparator{
+				[]Comparator{
+					&PropertyComparator{2, Descending},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MakeComparator(tt.args.query, tt.args.t); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MakeComparator() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCompositeComparator_HasNested(t *testing.T) {
+	type fields struct {
+		comparators []Comparator
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{"no nested", fields{[]Comparator{}}, false},
+		{"nested", fields{[]Comparator{ValueComparator{Ascending}}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := CompositeComparator{
+				comparators: tt.fields.comparators,
+			}
+			if got := c.HasNested(); got != tt.want {
+				t.Errorf("CompositeComparator.HasNested() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -57,6 +170,27 @@ func TestCompositeComparator_Less(t *testing.T) {
 			}
 			if got := c.Less(tt.args.a, tt.args.b); got != tt.want {
 				t.Errorf("CompositeComparator.Less() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_MakeComparator(t *testing.T) {
+	type args struct {
+		query datastore.Query
+		t     reflect.Type
+	}
+	tests := []struct {
+		name string
+		args args
+		want *CompositeComparator
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MakeComparator(tt.args.query, tt.args.t); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("makeComparator() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -2,6 +2,8 @@ package filter
 
 import (
 	"reflect"
+
+	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
 // Comparator describes the behavior of a comparable.
@@ -25,6 +27,11 @@ func NewCompositeComparator(comparators []Comparator) *CompositeComparator {
 	}
 }
 
+// HasNested returns true if the CompositeComparator has nested comparators.
+func (c CompositeComparator) HasNested() bool {
+	return len(c.comparators) > 0
+}
+
 // Less returns true if a is less than b based on all the inner comparators.
 // The comparison starts with the first Comparator of the list. If a is less than b using this Comparator,
 // the function returns. If a equals b, the next comparator is used, and so on.
@@ -38,6 +45,18 @@ func (c CompositeComparator) Less(a, b interface{}) bool {
 		}
 	}
 	return false
+}
+
+// MakeComparator creates a CompositeComparator from the orders of the given query.
+func MakeComparator(query datastore.Query, t reflect.Type) *CompositeComparator {
+	comparators := make([]Comparator, 0)
+	for _, order := range query.Order {
+		comparator := NewComparator(order, t)
+		if comparator != nil {
+			comparators = append(comparators, comparator)
+		}
+	}
+	return NewCompositeComparator(comparators)
 }
 
 // Direction describes the direction of a sort operation.

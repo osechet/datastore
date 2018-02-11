@@ -4,29 +4,94 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/golang/protobuf/descriptor"
 	test "github.com/osechet/go-datastore/_proto/osechet/test"
 	"github.com/osechet/go-datastore/filter"
+	"github.com/osechet/go-datastore/query"
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
+func AutoQuery(q datastore.Query, books []*test.Book) []*test.Book {
+	results := NewBookResultSet()
+	query.AutoQuery(NewBookStorage(books), q, reflect.TypeOf(test.Book{}), results)
+	return results.Books
+}
+
+type BookScanner struct {
+	storage BookStorage
+	current int
+}
+
+func NewBookScanner(storage BookStorage) *BookScanner {
+	return &BookScanner{
+		storage,
+		0,
+	}
+}
+
+func (s BookScanner) HasNext() bool {
+	return s.current < len(s.storage.books)
+}
+
+func (s *BookScanner) Next() interface{} {
+	ret := s.current
+	s.current++
+	return ret
+}
+
+type BookStorage struct {
+	books []*test.Book
+}
+
+func NewBookStorage(books []*test.Book) *BookStorage {
+	return &BookStorage{
+		books,
+	}
+}
+
+func (s BookStorage) Scanner() query.Scanner {
+	return NewBookScanner(s)
+}
+
+func (s BookStorage) ItemFor(key interface{}) descriptor.Message {
+	return s.books[key.(int)]
+}
+
+type BookResultSet struct {
+	Books []*test.Book
+}
+
+func NewBookResultSet() *BookResultSet {
+	return &BookResultSet{
+		make([]*test.Book, 0),
+	}
+}
+
+func (rs *BookResultSet) Len() int {
+	return len(rs.Books)
+}
+
+func (rs *BookResultSet) At(index int) interface{} {
+	return rs.Books[index]
+}
+
+func (rs *BookResultSet) Insert(book interface{}, index int) {
+	rs.Books = append(rs.Books, nil)
+	copy(rs.Books[index+1:], rs.Books[index:])
+	rs.Books[index] = book.(*test.Book)
+}
+
+func (rs *BookResultSet) Append(book interface{}) {
+	rs.Books = append(rs.Books, book.(*test.Book))
+}
+
 // Query is an example on how to use the comparators.
 func Query(query datastore.Query, dbBooks []*test.Book) []*test.Book {
-	comparators := make([]filter.Comparator, 0)
-	for _, order := range query.Order {
-		property := order.Property.Name
-		if order.Direction == datastore.PropertyOrder_DESCENDING {
-			c := filter.NewPropertyComparator(reflect.TypeOf(test.Book{}), property, filter.Descending)
-			comparators = append(comparators, c)
-		} else {
-			c := filter.NewPropertyComparator(reflect.TypeOf(test.Book{}), property, filter.Ascending)
-			comparators = append(comparators, c)
-		}
-	}
-	comparator := filter.NewCompositeComparator(comparators)
+	comparator := filter.MakeComparator(query, reflect.TypeOf(test.Book{}))
 	books := make([]*test.Book, 0)
 	for _, book := range dbBooks {
 		if filter.Match(query.Filter, book) {
-			if len(comparators) > 0 {
+			if comparator.HasNested() {
 				index := sort.Search(len(books), func(i int) bool {
 					return comparator.Less(book, books[i])
 				})

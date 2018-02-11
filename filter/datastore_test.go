@@ -10,22 +10,22 @@ import (
 
 func TestNewComparator(t *testing.T) {
 	type args struct {
-		t     reflect.Type
 		order *datastore.PropertyOrder
+		t     reflect.Type
 	}
 	tests := []struct {
 		name string
 		args args
-		want Comparator
+		want *PropertyComparator
 	}{
-		{"invalid order", args{reflect.TypeOf(test.Tested{}), nil}, nil},
-		{"invalid property", args{reflect.TypeOf(test.Tested{}), &datastore.PropertyOrder{Property: &datastore.PropertyReference{Name: "none"}, Direction: datastore.PropertyOrder_ASCENDING}}, (*PropertyComparator)(nil)},
-		{"ascending", args{reflect.TypeOf(test.Tested{}), &datastore.PropertyOrder{Property: &datastore.PropertyReference{Name: "int32_value"}, Direction: datastore.PropertyOrder_ASCENDING}}, &PropertyComparator{2, Ascending}},
-		{"descending", args{reflect.TypeOf(test.Tested{}), &datastore.PropertyOrder{Property: &datastore.PropertyReference{Name: "int32_value"}, Direction: datastore.PropertyOrder_DESCENDING}}, &PropertyComparator{2, Descending}},
+		{"invalid order", args{nil, reflect.TypeOf(test.Tested{})}, nil},
+		{"invalid property", args{&datastore.PropertyOrder{Property: &datastore.PropertyReference{Name: "none"}, Direction: datastore.PropertyOrder_ASCENDING}, reflect.TypeOf(test.Tested{})}, (*PropertyComparator)(nil)},
+		{"ascending", args{&datastore.PropertyOrder{Property: &datastore.PropertyReference{Name: "int32_value"}, Direction: datastore.PropertyOrder_ASCENDING}, reflect.TypeOf(test.Tested{})}, &PropertyComparator{2, Ascending}},
+		{"descending", args{&datastore.PropertyOrder{Property: &datastore.PropertyReference{Name: "int32_value"}, Direction: datastore.PropertyOrder_DESCENDING}, reflect.TypeOf(test.Tested{})}, &PropertyComparator{2, Descending}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewComparator(tt.args.t, tt.args.order); !reflect.DeepEqual(got, tt.want) {
+			if got := NewComparator(tt.args.order, tt.args.t); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewComparator() = %v, want %v", got, tt.want)
 			}
 		})
