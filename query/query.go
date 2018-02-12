@@ -9,7 +9,8 @@ import (
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
-func AutoQuery(storage Storage, query datastore.Query, t reflect.Type, results ResultSet) error {
+// Apply queries the given storage with the given query and stores the results in the given ResultSet.
+func Apply(storage Storage, query datastore.Query, t reflect.Type, results ResultSet) error {
 	scanner := storage.Scanner()
 	comparator := filter.MakeComparator(query, t)
 	for scanner.HasNext() {

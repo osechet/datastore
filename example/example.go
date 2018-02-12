@@ -11,9 +11,9 @@ import (
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
-func AutoQuery(q datastore.Query, books []*test.Book) ([]*test.Book, error) {
+func Apply(q datastore.Query, books []*test.Book) ([]*test.Book, error) {
 	results := NewBookResultSet()
-	err := query.AutoQuery(NewBookStorage(books), q, reflect.TypeOf(test.Book{}), results)
+	err := query.Apply(NewBookStorage(books), q, reflect.TypeOf(test.Book{}), results)
 	return results.Books, err
 }
 

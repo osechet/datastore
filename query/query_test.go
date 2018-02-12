@@ -9,7 +9,7 @@ import (
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
-func TestAutoQuery(t *testing.T) {
+func TestApply(t *testing.T) {
 	data := []descriptor.Message{
 		&test.Tested{Int32Value: 55, Int64Value: 35},
 		&test.Tested{Int32Value: 68, Int64Value: 43},
@@ -121,9 +121,9 @@ func TestAutoQuery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			AutoQuery(tt.args.storage, tt.args.query, tt.args.t, tt.args.results)
+			Apply(tt.args.storage, tt.args.query, tt.args.t, tt.args.results)
 			if got := tt.args.results.(*SliceResultSet).Items; !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AutoQuery() = %v, want %v", got, tt.want)
+				t.Errorf("Apply() = %v, want %v", got, tt.want)
 			}
 		})
 	}

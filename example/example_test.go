@@ -8,7 +8,7 @@ import (
 	datastore "google.golang.org/genproto/googleapis/datastore/v1"
 )
 
-func TestAutoQuery(t *testing.T) {
+func TestApply(t *testing.T) {
 	dbBooks := []*test.Book{
 		{
 			Isbn:   60929871,
@@ -305,7 +305,7 @@ func TestAutoQuery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := AutoQuery(tt.args.query, tt.args.dbBooks); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := Apply(tt.args.query, tt.args.dbBooks); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Query() = %v, want %v", got, tt.want)
 			}
 		})
